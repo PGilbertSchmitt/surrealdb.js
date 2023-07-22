@@ -8,6 +8,8 @@ export interface Connection {
 	connect: (url: string, options?: ConnectionOptions) => void;
 	ping: () => Promise<void>;
 	use: (opt: { ns: string; db: string }) => MaybePromise<void>;
+
+	// Info method is not available in the HTTP REST API
 	info?: <T extends Record<string, unknown> = Record<string, unknown>>() =>
 		Promise<T | undefined>;
 
@@ -16,6 +18,7 @@ export interface Connection {
 	authenticate: (token: Token) => MaybePromise<void>;
 	invalidate: () => MaybePromise<void>;
 
+	// Let/unset methods are not available in the HTTP REST API
 	let?: (variable: string, value: unknown) => Promise<void>;
 	unset?: (variable: string) => Promise<void>;
 
@@ -34,6 +37,15 @@ export interface Connection {
 	>(
 		thing: string,
 		data?: U,
+	) => Promise<ActionResult<T, U>[]>;
+
+	// Insert method is not available in the HTTP REST API
+	insert?: <
+		T extends Record<string, unknown>,
+		U extends Record<string, unknown> = T,
+	>(
+		thing: string,
+		data?: U | U[],
 	) => Promise<ActionResult<T, U>[]>;
 
 	update: <
@@ -205,27 +217,27 @@ export type UnprocessedLiveQueryResponse<
 //////////   PATCH TYPES   //////////
 /////////////////////////////////////
 
-type BasePatch = {
-	path: string;
+type BasePatch<T = string> = {
+	path: T;
 };
 
-export type AddPatch = BasePatch & {
+export type AddPatch<T = string, U = unknown> = BasePatch<T> & {
 	op: "add";
-	value: unknown;
+	value: U;
 };
 
-export type RemovePatch = BasePatch & {
+export type RemovePatch<T = string> = BasePatch<T> & {
 	op: "remove";
 };
 
-export type ReplacePatch = BasePatch & {
+export type ReplacePatch<T = string, U = unknown> = BasePatch<T> & {
 	op: "replace";
-	value: unknown;
+	value: U;
 };
 
-export type ChangePatch = BasePatch & {
+export type ChangePatch<T = string, U = string> = BasePatch<T> & {
 	op: "change";
-	value: string;
+	value: U;
 };
 
 export type Patch = AddPatch | RemovePatch | ReplacePatch | ChangePatch;
